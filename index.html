@@ -201,17 +201,7 @@ input{width:100%;font-size:20px;}
 
 <script>
 const questions={
-matematica:[
-[{q:'Quanto é 2 + 2?',a:'4'},{q:'Quanto é 5 + 3?',a:'8'}],
-[{q:'Quanto é 10 - 4?',a:'6'},{q:'Quanto é 12 + 8?',a:'20'}],
-[{q:'Quanto é 6 x 3?',a:'18'},{q:'Quanto é 24 ÷ 6?',a:'4'}],
-[{q:'Quanto é 15 x 2?',a:'30'}],
-[{q:'Quanto é 12²?',a:'144'}],
-[{q:'Quanto é 25% de 100?',a:'25'}],
-[{q:'Raiz quadrada de 64?',a:'8'}],
-[{q:'Quanto é 3/4 de 100?',a:'75'}],
-[{q:'Quanto vale π aproximado?',a:'3.14'}]
-],
+matematica:[],
 
 portugues:[
 [{q:'Plural de bola',a:'bolas'}],
@@ -274,6 +264,10 @@ ingles:[
 ]
 };
 
+let mathUsed = new Set();
+let currentQuestionId = '';
+let answering = false;
+
 let mode='';
 let score=0;
 let lives=3;
@@ -311,7 +305,113 @@ document.getElementById('lives').innerText=lives;
 document.getElementById('year').innerText=year+'º';
 }
 
+function generateMathQuestion(){
+
+let q='';
+let a='';
+let unique=false;
+let attempts=0;
+
+while(!unique && attempts < 500){
+
+attempts++;
+
+if(year===1){
+let n1=Math.floor(Math.random()*20)+1;
+let n2=Math.floor(Math.random()*20)+1;
+let op=Math.random()>0.5?'+':'-';
+
+if(op==='+'){
+q=`Quanto é ${n1} + ${n2}?`;
+a=(n1+n2).toString();
+}else{
+if(n2>n1){
+[n1,n2]=[n2,n1];
+}
+q=`Quanto é ${n1} - ${n2}?`;
+a=(n1-n2).toString();
+}
+}
+
+else if(year===2){
+let n1=Math.floor(Math.random()*50)+10;
+let n2=Math.floor(Math.random()*30)+1;
+q=`Quanto é ${n1} - ${n2}?`;
+a=(n1-n2).toString();
+}
+
+else if(year===3){
+let n1=Math.floor(Math.random()*15)+2;
+let n2=Math.floor(Math.random()*15)+2;
+q=`Quanto é ${n1} × ${n2}?`;
+a=(n1*n2).toString();
+}
+
+else if(year===4){
+let n2=Math.floor(Math.random()*12)+2;
+let result=Math.floor(Math.random()*20)+2;
+let n1=n2*result;
+q=`Quanto é ${n1} ÷ ${n2}?`;
+a=result.toString();
+}
+
+else if(year===5){
+let n1=Math.floor(Math.random()*25)+5;
+q=`Quanto é ${n1}² ?`;
+a=(n1*n1).toString();
+}
+
+else if(year===6){
+let total=Math.floor(Math.random()*500)+100;
+let percent=[10,20,25,30,40,50,75][Math.floor(Math.random()*7)];
+q=`Quanto é ${percent}% de ${total}?`;
+a=((total*percent)/100).toString();
+}
+
+else if(year===7){
+let value=Math.floor(Math.random()*20)+2;
+q=`Qual é a raiz quadrada de ${value*value}?`;
+a=value.toString();
+}
+
+else if(year===8){
+let x=Math.floor(Math.random()*20)+1;
+let n=Math.floor(Math.random()*15)+1;
+q=`Resolva: x + ${n} = ${x+n}`;
+a=x.toString();
+}
+
+else if(year===9){
+let coef=Math.floor(Math.random()*9)+2;
+let x=Math.floor(Math.random()*15)+1;
+let n=Math.floor(Math.random()*20)+1;
+q=`Resolva: ${coef}x + ${n} = ${(coef*x)+n}`;
+a=x.toString();
+}
+
+currentQuestionId=q+'-'+a;
+
+if(!mathUsed.has(currentQuestionId)){
+mathUsed.add(currentQuestionId);
+unique=true;
+}
+
+if(mathUsed.size>1000){
+mathUsed.clear();
+}
+}
+
+if(!unique){
+mathUsed.clear();
+return generateMathQuestion();
+}
+
+return {q,a};
+}
+
 function newQuestion(){
+
+answering=false;
 locked=false;
 clearInterval(countdown);
 
@@ -319,7 +419,22 @@ document.getElementById('message').innerText='';
 document.getElementById('answer').value='';
 document.getElementById('answer').focus();
 
+if(mode==='matematica'){
+
+const generated=generateMathQuestion();
+answer=generated.a;
+document.getElementById('question').innerText=generated.q;
+startTimer();
+return;
+}
+
 const list=questions[mode][year-1];
+
+if(!list || list.length===0){
+
+victory();
+return;
+}
 
 let available=list.filter((q,index)=>!usedQuestions[year].includes(index));
 
@@ -328,7 +443,16 @@ usedQuestions[year]=[];
 available=[...list];
 }
 
-const random=available[Math.floor(Math.random()*available.length)];
+if(available.length===0){
+usedQuestions[year]=[];
+available=[...list];
+}
+
+let random=available[Math.floor(Math.random()*available.length)];
+
+if(!random){
+random=list[Math.floor(Math.random()*list.length)];
+}
 const originalIndex=list.indexOf(random);
 usedQuestions[year].push(originalIndex);
 
@@ -361,8 +485,15 @@ document.getElementById('timeFill').style.width=percent+'%';
 }
 
 function checkAnswer(){
+
+if(answering)return;
+answering=true;
+
 if(locked || lives<=0)return;
 locked=true;
+
+const button=document.querySelector('.play');
+button.disabled=true;
 
 const user=document.getElementById('answer').value;
 
@@ -386,7 +517,10 @@ victory();
 return;
 }
 
-setTimeout(newQuestion,1200);
+setTimeout(()=>{
+button.disabled=false;
+newQuestion();
+},1200);
 
 }else{
 loseLife('❌ RESPOSTA ERRADA!');
@@ -408,7 +542,10 @@ alert('🏆 Fim de jogo! Pontuação: '+score);
 location.reload();
 },1200);
 }else{
-setTimeout(newQuestion,1800);
+setTimeout(()=>{
+document.querySelector('.play').disabled=false;
+newQuestion();
+},1800);
 }
 }
 
@@ -425,6 +562,8 @@ location.reload();
 }
 
 document.addEventListener('keydown',e=>{
+
+if(answering)return;
 if(e.key==='Enter'){
 if(!document.getElementById('gameArea').classList.contains('hidden')){
 checkAnswer();
