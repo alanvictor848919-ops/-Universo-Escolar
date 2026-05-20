@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🧠 Universo Escolar</title>
+
+<style>
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+}
+
+body{
+font-family:Arial,sans-serif;
+min-height:100vh;
+display:flex;
+justify-content:center;
+align-items:center;
+overflow:hidden;
+background:linear-gradient(-45deg,#0f2027,#203a43,#2c5364,#00c6ff);
+background-size:400% 400%;
+animation:bg 12s ease infinite;
+}
+
+@keyframes bg{
+0%{background-position:0% 50%;}
+50%{background-position:100% 50%;}
+100%{background-position:0% 50%;}
+}
+
+.game{
+width:95%;
+max-width:1000px;
+padding:30px;
+border-radius:30px;
+background:rgba(255,255,255,.12);
+backdrop-filter:blur(16px);
+box-shadow:0 10px 40px rgba(0,0,0,.35);
+text-align:center;
+color:white;
+}
+
+.logo{
+font-size:52px;
+font-weight:bold;
+margin-bottom:10px;
+}
+
+.subtitle{
+font-size:20px;
+margin-bottom:25px;
+color:#d9f6ff;
+}
+
+.menu{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+gap:15px;
+}
+
+button{
+border:none;
+padding:18px;
+border-radius:18px;
+font-size:20px;
+font-weight:bold;
+color:white;
+cursor:pointer;
+transition:.2s;
+box-shadow:0 8px 0 rgba(0,0,0,.2);
+}
+
+button:hover{
+transform:scale(1.05);
+}
+
+button:active{
+transform:translateY(4px);
+box-shadow:0 4px 0 rgba(0,0,0,.2);
+}
+
+.math{background:#4caf50;}
+.port{background:#e91e63;}
+.cien{background:#2196f3;}
+.geo{background:#ff9800;}
+.hist{background:#795548;}
+.ing{background:#673ab7;}
+.play{background:#00bcd4;margin-top:20px;width:100%;}
+
+.stats{
+display:flex;
+justify-content:space-around;
+flex-wrap:wrap;
+gap:15px;
+margin:25px 0;
+}
+
+.card{
+background:rgba(255,255,255,.15);
+padding:15px 25px;
+border-radius:18px;
+min-width:150px;
+font-size:22px;
+font-weight:bold;
+}
+
+.question{
+font-size:36px;
+margin:30px 0;
+min-height:90px;
+}
+
+input{
+width:90%;
+max-width:600px;
+padding:18px;
+border:none;
+border-radius:18px;
+font-size:24px;
+text-align:center;
+}
+
+.message{
+font-size:28px;
+margin-top:25px;
+min-height:40px;
+font-weight:bold;
+}
+
+.hidden{
+display:none;
+}
+
+.time-bar{
+width:100%;
+height:20px;
+background:rgba(255,255,255,.2);
+border-radius:30px;
+overflow:hidden;
+margin-top:20px;
+}
+
+#timeFill{
+width:100%;
+height:100%;
+background:linear-gradient(90deg,#00ff95,#ffeb3b,#ff5722);
+transition:1s linear;
+}
+
+@media(max-width:700px){
+.logo{font-size:36px;}
+.question{font-size:28px;}
+button{width:100%;}
+input{width:100%;font-size:20px;}
+}
+</style>
+</head>
+<body>
+
+<div class="game">
+
+<div class="logo">🧠 Universo Escolar</div>
+<div class="subtitle">Academia Suprema • Teste Jogável</div>
+
+<div id="menu">
+<div class="menu">
+<button class="math" onclick="startGame('matematica')">➕ Matemática</button>
+<button class="port" onclick="startGame('portugues')">📚 Português</button>
+<button class="cien" onclick="startGame('ciencias')">🔬 Ciências</button>
+<button class="geo" onclick="startGame('geografia')">🌎 Geografia</button>
+<button class="hist" onclick="startGame('historia')">🏺 História</button>
+<button class="ing" onclick="startGame('ingles')">🇺🇸 Inglês</button>
+</div>
+</div>
+
+<div id="gameArea" class="hidden">
+
+<div class="stats">
+<div class="card">⭐ Pontos<br><span id="score">0</span></div>
+<div class="card">❤️ Vidas<br><span id="lives">3</span></div>
+<div class="card">🎓 Ano<br><span id="year">1º</span></div>
+</div>
+
+<div class="time-bar">
+<div id="timeFill"></div>
+</div>
+
+<div class="question" id="question"></div>
+
+<input id="answer" placeholder="Digite sua resposta">
+
+<button class="play" onclick="checkAnswer()">RESPONDER</button>
+
+<div class="message" id="message"></div>
+
+</div>
+
+</div>
+
+<script>
+const questions={
+matematica:[
+[{q:'Quanto é 2 + 2?',a:'4'},{q:'Quanto é 5 + 3?',a:'8'}],
+[{q:'Quanto é 10 - 4?',a:'6'},{q:'Quanto é 12 + 8?',a:'20'}],
+[{q:'Quanto é 6 x 3?',a:'18'},{q:'Quanto é 24 ÷ 6?',a:'4'}],
+[{q:'Quanto é 15 x 2?',a:'30'}],
+[{q:'Quanto é 12²?',a:'144'}],
+[{q:'Quanto é 25% de 100?',a:'25'}],
+[{q:'Raiz quadrada de 64?',a:'8'}],
+[{q:'Quanto é 3/4 de 100?',a:'75'}],
+[{q:'Quanto vale π aproximado?',a:'3.14'}]
+],
+
+portugues:[
+[{q:'Plural de bola',a:'bolas'}],
+[{q:'Feminino de menino',a:'menina'}],
+[{q:'Correto: jeito ou geito?',a:'jeito'}],
+[{q:'Sinônimo de feliz',a:'alegre'}],
+[{q:'Qual palavra indica ação?',a:'verbo'}],
+[{q:'Qual é o sujeito em João correu?',a:'joao'}],
+[{q:'Plural de cidadão',a:'cidadãos'}],
+[{q:'O que é metáfora?',a:'comparação'}],
+[{q:'O que é linguagem formal?',a:'culta'}]
+],
+
+ciencias:[
+[{q:'Qual planeta vivemos?',a:'terra'}],
+[{q:'Qual estrela ilumina a Terra?',a:'sol'}],
+[{q:'Água sólida é?',a:'gelo'}],
+[{q:'Qual órgão bombeia sangue?',a:'coração'}],
+[{q:'Qual gás respiramos?',a:'oxigênio'}],
+[{q:'O que as plantas fazem com luz?',a:'fotossíntese'}],
+[{q:'Camada que protege a Terra?',a:'ozônio'}],
+[{q:'Maior órgão do corpo?',a:'pele'}],
+[{q:'O que é DNA?',a:'genética'}]
+],
+
+geografia:[
+[{q:'Qual país moramos?',a:'brasil'}],
+[{q:'Capital do Brasil?',a:'brasília'}],
+[{q:'Quantos continentes existem?',a:'6'}],
+[{q:'Maior oceano?',a:'pacífico'}],
+[{q:'Maior país do mundo?',a:'rússia'}],
+[{q:'Linha que divide a Terra?',a:'equador'}],
+[{q:'Maior floresta do mundo?',a:'amazônia'}],
+[{q:'O que causa terremotos?',a:'placas tectônicas'}],
+[{q:'O que é clima?',a:'tempo'}]
+],
+
+historia:[
+[{q:'Quem descobriu o Brasil?',a:'cabral'}],
+[{q:'Ano da independência do Brasil?',a:'1822'}],
+[{q:'Primeiro presidente do Brasil?',a:'deodoro'}],
+[{q:'Quem libertou os escravos?',a:'princesa isabel'}],
+[{q:'Ano da Proclamação da República?',a:'1889'}],
+[{q:'Quem foi Tiradentes?',a:'herói'}],
+[{q:'O que foi a Revolução Francesa?',a:'revolução'}],
+[{q:'Quem liderou a Alemanha nazista?',a:'hitler'}],
+[{q:'Quando terminou a Segunda Guerra?',a:'1945'}]
+],
+
+ingles:[
+[{q:'Tradução de dog',a:'cachorro'}],
+[{q:'Tradução de house',a:'casa'}],
+[{q:'Tradução de school',a:'escola'}],
+[{q:'Como se diz vermelho?',a:'red'}],
+[{q:'Como se diz obrigado?',a:'thank you'}],
+[{q:'Tradução de book',a:'livro'}],
+[{q:'Como se diz água?',a:'water'}],
+[{q:'Tradução de computer',a:'computador'}],
+[{q:'Como se diz amizade?',a:'friendship'}]
+]
+};
+
+let mode='';
+let score=0;
+let lives=3;
+let year=1;
+let answer='';
+let timer=20;
+let countdown;
+let usedQuestions={};
+let locked=false;
+
+function normalize(text){
+return text.toString().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[.,!?]/g,'').toLowerCase().trim();
+}
+
+function startGame(selected){
+mode=selected;
+score=0;
+lives=3;
+year=1;
+usedQuestions={};
+
+for(let i=1;i<=9;i++){
+usedQuestions[i]=[];
+}
+
+document.getElementById('menu').classList.add('hidden');
+document.getElementById('gameArea').classList.remove('hidden');
+updateStats();
+newQuestion();
+}
+
+function updateStats(){
+document.getElementById('score').innerText=score;
+document.getElementById('lives').innerText=lives;
+document.getElementById('year').innerText=year+'º';
+}
+
+function newQuestion(){
+locked=false;
+clearInterval(countdown);
+
+document.getElementById('message').innerText='';
+document.getElementById('answer').value='';
+document.getElementById('answer').focus();
+
+const list=questions[mode][year-1];
+
+let available=list.filter((q,index)=>!usedQuestions[year].includes(index));
+
+if(available.length===0){
+usedQuestions[year]=[];
+available=[...list];
+}
+
+const random=available[Math.floor(Math.random()*available.length)];
+const originalIndex=list.indexOf(random);
+usedQuestions[year].push(originalIndex);
+
+answer=random.a;
+document.getElementById('question').innerText=random.q;
+
+startTimer();
+}
+
+function startTimer(){
+timer=Math.max(8,20-year);
+updateBar();
+
+countdown=setInterval(()=>{
+
+timer--;
+updateBar();
+
+if(timer<=0){
+clearInterval(countdown);
+loseLife('⏰ Tempo esgotado!');
+}
+
+},1000);
+}
+
+function updateBar(){
+const percent=(timer/20)*100;
+document.getElementById('timeFill').style.width=percent+'%';
+}
+
+function checkAnswer(){
+if(locked || lives<=0)return;
+locked=true;
+
+const user=document.getElementById('answer').value;
+
+if(normalize(user.replace(',','.'))===normalize(answer.toString().replace(',','.'))){
+
+clearInterval(countdown);
+
+score+=10;
+
+if(score>=year*30 && year<9){
+year++;
+}
+
+updateStats();
+
+document.getElementById('message').style.color='#00ff95';
+document.getElementById('message').innerText='🎉 RESPOSTA CORRETA!';
+
+if(score>=270){
+victory();
+return;
+}
+
+setTimeout(newQuestion,1200);
+
+}else{
+loseLife('❌ RESPOSTA ERRADA!');
+}
+}
+
+function loseLife(text){
+clearInterval(countdown);
+
+lives=Math.max(0,lives-1);
+updateStats();
+
+document.getElementById('message').style.color='#ff5252';
+document.getElementById('message').innerText=text+' Correta: '+answer;
+
+if(lives<=0){
+setTimeout(()=>{
+alert('🏆 Fim de jogo! Pontuação: '+score);
+location.reload();
+},1200);
+}else{
+setTimeout(newQuestion,1800);
+}
+}
+
+function victory(){
+clearInterval(countdown);
+
+document.getElementById('question').innerText='🏆 VOCÊ ZEROU O JOGO!';
+document.getElementById('message').innerText='⭐ Mestre Supremo do Conhecimento ⭐';
+
+setTimeout(()=>{
+alert('🎓 Vitória absoluta!');
+location.reload();
+},3000);
+}
+
+document.addEventListener('keydown',e=>{
+if(e.key==='Enter'){
+if(!document.getElementById('gameArea').classList.contains('hidden')){
+checkAnswer();
+}
+}
+});
+</script>
+
+</body>
+</html>
